@@ -1,0 +1,32 @@
+body{
+    background-color: #07081D;
+    color: #FFFFFF;
+    min-height: 100vh;
+    height: 100%;
+}
+
+/* main{
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 60px 5%; 
+} */
+
+nav{
+    display: flex;
+    align-items: center;
+    /* justify-content:space-around; */
+    /* padding: 0 6rem; */
+    /* text-align: left; */
+}
+
+.app{
+    display: flex;
+    align-items: center;
+    justify-content:space-around;
+    text-align: left;
+}
+
+    /* .container{
+padding: 0 6rem; 
+}*/
