@@ -1,3 +1,5 @@
+const body = document.getElementsByTagName('body')
+console.log(body);
 const form = document.getElementById('form');
 const cityInput = document.querySelector('.search-input');
 const cardContainer = document.querySelector('.card-container');
@@ -13,11 +15,50 @@ const convertCelsius = kelvin => {
     return celsius;
 };
 
+function getTimezoneOffsetString(offsetMinutes) {
+    const sign = offsetMinutes >= 0 ? '+' : '-';
+    const absOffsetMinutes = Math.abs(offsetMinutes);
+    const hours = Math.floor(absOffsetMinutes / 60);
+    const minutes = absOffsetMinutes % 60;
+    return `${sign}${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}`;
+  }
+
 const renderCity = city => {
     const cityDescripcion = city.weather[0].description
     const descriptionFirstLetter = cityDescripcion.charAt(0).toUpperCase()
     const remainingLetters = cityDescripcion.slice(1)
     const capitalizedDescription = descriptionFirstLetter + remainingLetters
+    console.log(city);
+    // const bgcolor = convertCelsius(city.main.temp) ? 
+
+    // const timezoneOffset = city.timezone;
+    // console.log(timezoneOffset);
+    // const currentUtcTime = new Date();
+    // console.log(currentUtcTime);
+    // const localTime = new Date(currentUtcTime.getTime() + timezoneOffset * 1000);
+    // console.log(localTime);
+    // const localTimeLocalized = localTime.toLocaleString()
+    // console.log(localTimeLocalized);
+
+    // const timezoneOffsetSeconds = city.timezone;
+
+    // // Convertimos el desplazamiento horario a minutos
+    // const timezoneOffsetMinutes = timezoneOffsetSeconds / 60;
+
+    // // Calculamos el desplazamiento horario en formato de horas y minutos (por ejemplo, GMT -3:00)
+    // const timezoneOffset = getTimezoneOffsetString(timezoneOffsetMinutes);
+
+    // // Creamos un objeto de fecha usando la hora actual en UTC
+    // const currentUtcTime = new Date();
+    // console.log(currentUtcTime);
+
+    // // Calculamos la hora local sumando el desplazamiento horario a la hora actual en UTC
+    // const localTime = new Date(currentUtcTime.getTime() + timezoneOffsetMinutes * 60 * 1000);
+
+    // // Devolvemos la hora local formateada junto con el desplazamiento horario
+    // console.log(localTime.toLocaleString(), timezoneOffset);
+
+    // body.setAttribute("background-color", bgcolor)
 
     return `
         <div class="card">
@@ -26,7 +67,7 @@ const renderCity = city => {
                     <span><svg width="22" height="27" viewBox="0 0 22 27" fill="none" xmlns="http://www.w3.org/2000/svg">
                         <path d="M11.0002 0.666687C5.40016 0.666687 0.333496 4.96002 0.333496 11.6C0.333496 15.84 3.60016 20.8267 10.1202 26.5734C10.6268 27.0134 11.3868 27.0134 11.8935 26.5734C18.4002 20.8267 21.6668 15.84 21.6668 11.6C21.6668 4.96002 16.6002 0.666687 11.0002 0.666687ZM11.0002 14C9.5335 14 8.3335 12.8 8.3335 11.3334C8.3335 9.86669 9.5335 8.66669 11.0002 8.66669C12.4668 8.66669 13.6668 9.86669 13.6668 11.3334C13.6668 12.8 12.4668 14 11.0002 14Z" fill="white"/>
                         </svg></span>
-                    <h3>${city.name}</h3>
+                    <h3>${city.name}, ${city.sys.country}</h3>
                 </div>
                 <span><svg  width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
                     <path data-id="${city.id}" class="close" d="M8 10.4481L13.071 15.5191C13.3916 15.8397 13.7996 16 14.2951 16C14.7905 16 15.1985 15.8397 15.5191 15.5191C15.8397 15.1985 16 14.7905 16 14.2951C16 13.7996 15.8397 13.3916 15.5191 13.071L10.4481 8L15.5191 2.92896C15.8397 2.60838 16 2.20036 16 1.70492C16 1.20947 15.8397 0.801457 15.5191 0.480874C15.1985 0.160291 14.7905 0 14.2951 0C13.7996 0 13.3916 0.160291 13.071 0.480874L8 5.55191L2.92896 0.480874C2.60838 0.160291 2.20036 0 1.70492 0C1.20947 0 0.801457 0.160291 0.480874 0.480874C0.160291 0.801457 0 1.20947 0 1.70492C0 2.20036 0.160291 2.60838 0.480874 2.92896L5.55191 8L0.480874 13.071C0.160291 13.3916 0 13.7996 0 14.2951C0 14.7905 0.160291 15.1985 0.480874 15.5191C0.801457 15.8397 1.20947 16 1.70492 16C2.20036 16 2.60838 15.8397 2.92896 15.5191L8 10.4481Z" fill="white" fill-opacity="0.72"/>
@@ -86,7 +127,10 @@ const searchCity = async e => {
         form.reset()
         return
     }else if(cities.some(city => city.id === fetchedCity.id)){
-        alert('Ya estamos mostrando el clima de esa ciudad')
+        const foundIndex = cities.findIndex (el => el.id == fetchedCity.id)
+        cities.splice(foundIndex, 1)
+        cities.unshift(fetchedCity)
+        renderCitiesList(cities)
         form.reset()
         return
     }
