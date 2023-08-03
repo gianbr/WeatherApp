@@ -15,48 +15,16 @@ const convertCelsius = kelvin => {
     return celsius;
 };
 
-function getTimezoneOffsetString(offsetMinutes) {
-    const sign = offsetMinutes >= 0 ? '+' : '-';
-    const absOffsetMinutes = Math.abs(offsetMinutes);
-    const hours = Math.floor(absOffsetMinutes / 60);
-    const minutes = absOffsetMinutes % 60;
-    return `${sign}${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}`;
-  }
-
 const renderCity = city => {
     const cityDescripcion = city.weather[0].description
     const descriptionFirstLetter = cityDescripcion.charAt(0).toUpperCase()
     const remainingLetters = cityDescripcion.slice(1)
     const capitalizedDescription = descriptionFirstLetter + remainingLetters
     console.log(city);
-    // const bgcolor = convertCelsius(city.main.temp) ? 
+    console.log(parseInt(city.localTime));
+    // const bgcolor = city.localTime >  
 
-    // const timezoneOffset = city.timezone;
-    // console.log(timezoneOffset);
-    // const currentUtcTime = new Date();
-    // console.log(currentUtcTime);
-    // const localTime = new Date(currentUtcTime.getTime() + timezoneOffset * 1000);
-    // console.log(localTime);
-    // const localTimeLocalized = localTime.toLocaleString()
-    // console.log(localTimeLocalized);
-
-    // const timezoneOffsetSeconds = city.timezone;
-
-    // // Convertimos el desplazamiento horario a minutos
-    // const timezoneOffsetMinutes = timezoneOffsetSeconds / 60;
-
-    // // Calculamos el desplazamiento horario en formato de horas y minutos (por ejemplo, GMT -3:00)
-    // const timezoneOffset = getTimezoneOffsetString(timezoneOffsetMinutes);
-
-    // // Creamos un objeto de fecha usando la hora actual en UTC
-    // const currentUtcTime = new Date();
-    // console.log(currentUtcTime);
-
-    // // Calculamos la hora local sumando el desplazamiento horario a la hora actual en UTC
-    // const localTime = new Date(currentUtcTime.getTime() + timezoneOffsetMinutes * 60 * 1000);
-
-    // // Devolvemos la hora local formateada junto con el desplazamiento horario
-    // console.log(localTime.toLocaleString(), timezoneOffset);
+    
 
     // body.setAttribute("background-color", bgcolor)
 
@@ -111,10 +79,11 @@ const renderCitiesList = citiesList => {
     cardContainer.innerHTML = citiesList.map(city => renderCity(city)).join('');
 };
 
+const timeDBkey = 'AJXKFG9MMZRF'
+
 const searchCity = async e => {
     e.preventDefault();
     const searchedCity = cityInput.value.trim();
-    console.log(searchedCity);
     if (searchedCity.length === 0 || !/^[A-Za-z\s]*$/.test(searchedCity)) {
         alert('Por favor ingresa una ciudad');
         return;
@@ -135,9 +104,23 @@ const searchCity = async e => {
         return
     }
 
+    const timeZoneResponse = await fetch(
+        `http://api.timezonedb.com/v2.1/get-time-zone?key=${timeDBkey}&format=json&by=position&lat=${fetchedCity.coord.lat}&lng=${fetchedCity.coord.lon}`
+    )
+
+    const timeZoneData = await timeZoneResponse.json()
+    const { formatted } = timeZoneData
+    const localTime = new Date(formatted).toLocaleTimeString()
+    // Object.defineProperty(fetchedCity, "localTime", {
+    //     value: localTime
+    // })
+
+    console.log("fetched ",fetchedCity);
+    
     cities = [fetchedCity, ...cities]
     renderCitiesList(cities)
     saveLocalStorage(cities)
+    console.log("cities ",cities);
     form.reset()
 
 }
