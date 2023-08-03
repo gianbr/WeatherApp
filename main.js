@@ -1,5 +1,5 @@
-const body = document.getElementsByTagName('body')
-console.log(body);
+const body = document.body
+// const cat = document.getElementById('cat-weather')
 const form = document.getElementById('form');
 const cityInput = document.querySelector('.search-input');
 const cardContainer = document.querySelector('.card-container');
@@ -20,13 +20,6 @@ const renderCity = city => {
     const descriptionFirstLetter = cityDescripcion.charAt(0).toUpperCase()
     const remainingLetters = cityDescripcion.slice(1)
     const capitalizedDescription = descriptionFirstLetter + remainingLetters
-    console.log(city);
-    console.log(parseInt(city.localTime));
-    // const bgcolor = city.localTime >  
-
-    
-
-    // body.setAttribute("background-color", bgcolor)
 
     return `
         <div class="card">
@@ -81,6 +74,41 @@ const renderCitiesList = citiesList => {
 
 const timeDBkey = 'AJXKFG9MMZRF'
 
+const renderBasedOnCity = city => {
+    console.log(city);
+    const rangeNightStart = 19
+    const rangeNightFinish = 8
+
+    const nightClear = "#07081D"
+    const nightCloudy = "#18202E"
+    const dayClear = "#3A120A"
+    const dayCloudy = "#3C4D69"
+    const snowy = "#053960"
+    const rainy = "#0F141E"
+    const stormy = "#060D17"
+
+    const nightClearPNG = "./img/nightclear.png"
+    const nightCloudyPNG = "./img/nightcloudy.png"
+    const dayClearPNG = "./img/dayclear.png"
+    const dayCloudyPNG = "./img/daycloudy.png"
+    const snowyPNG = "./img/snowy.png"
+    const rainyPNG = "./img/rainy.png"
+    const stormyPNG = "./img/stormy.png"
+
+    // en esta condición, revisar el clima para seleccionar correctamente el fondo y la imagen
+
+    // city.main TEMP
+    // city.weather.main lluvia, nieve, nubes, sol
+
+    if (parseInt(city.localTime) >= rangeNightStart || parseInt(city.localTime) <= rangeNightFinish){
+        body.style.backgroundColor = nightClear
+        document.getElementById("cat-image").src = nightClearPNG
+    }else{
+        body.style.backgroundColor = dayClear
+        document.getElementById("cat-image").src = dayClearPNG
+    }
+}
+
 const searchCity = async e => {
     e.preventDefault();
     const searchedCity = cityInput.value.trim();
@@ -90,19 +118,11 @@ const searchCity = async e => {
     }
 
     const fetchedCity = await requestCity(searchedCity);
-    
+
     if(!fetchedCity.id) {
         alert('La ciudad ingresada no existe')
         form.reset()
-        return
-    }else if(cities.some(city => city.id === fetchedCity.id)){
-        const foundIndex = cities.findIndex (el => el.id == fetchedCity.id)
-        cities.splice(foundIndex, 1)
-        cities.unshift(fetchedCity)
-        renderCitiesList(cities)
-        form.reset()
-        return
-    }
+        return}
 
     const timeZoneResponse = await fetch(
         `http://api.timezonedb.com/v2.1/get-time-zone?key=${timeDBkey}&format=json&by=position&lat=${fetchedCity.coord.lat}&lng=${fetchedCity.coord.lon}`
@@ -111,17 +131,27 @@ const searchCity = async e => {
     const timeZoneData = await timeZoneResponse.json()
     const { formatted } = timeZoneData
     const localTime = new Date(formatted).toLocaleTimeString()
-    // Object.defineProperty(fetchedCity, "localTime", {
-    //     value: localTime
-    // })
 
-    console.log("fetched ",fetchedCity);
+    fetchedCity.localTime = localTime
     
+    if(cities.some(city => city.id === fetchedCity.id)){
+        const foundIndex = cities.findIndex (el => el.id == fetchedCity.id)
+        cities.splice(foundIndex, 1)
+        cities.unshift(fetchedCity)
+        saveLocalStorage(cities)
+        renderCitiesList(cities)
+        form.reset()
+        renderBasedOnCity(fetchedCity)
+        console.log(fetchedCity);
+        return
+    }
+
     cities = [fetchedCity, ...cities]
     renderCitiesList(cities)
     saveLocalStorage(cities)
-    console.log("cities ",cities);
     form.reset()
+    
+    renderBasedOnCity(fetchedCity)
 
 }
 
@@ -134,6 +164,7 @@ const removeCity = e => {
 };
 
 const init = () => {
+    renderBasedOnCity(cities[0])
     renderCitiesList(cities);
     form.addEventListener('submit', searchCity);
     cardContainer.addEventListener('click', removeCity);
