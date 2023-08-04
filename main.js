@@ -21,6 +21,14 @@ const renderCity = city => {
     const remainingLetters = cityDescripcion.slice(1)
     const capitalizedDescription = descriptionFirstLetter + remainingLetters
 
+    // Obteniendo día especifico de la solicitud para renderizar en cada ciudad a modo de historial
+
+    const searchDateYear = new Date().getFullYear()
+    const searchDateMonth = new Date().getMonth()
+    const searchDateDay = new Date().getDay()
+    const searchDate = searchDateDay + "/" + searchDateMonth + "/" + searchDateYear
+    console.log(searchDate);
+
     return `
         <div class="card">
             <div class="card-ubication">
@@ -63,6 +71,9 @@ const renderCity = city => {
                         </svg>
                         ${city.main.humidity}% Humidity</div>
                 </div>
+            </div>
+            <div class="search-date">
+                <p>Viernes, 4 de Agosto de 2023</p>
             </div>
         </div>
     `
