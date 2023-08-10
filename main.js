@@ -186,7 +186,7 @@ const searchCity = async e => {
     }
 
     const timeZoneResponse = await fetch(
-        `http://api.timezonedb.com/v2.1/get-time-zone?key=${timeDBkey}&format=json&by=position&lat=${fetchedCity.coord.lat}&lng=${fetchedCity.coord.lon}`
+        `https://api.timezonedb.com/v2.1/get-time-zone?key=${timeDBkey}&format=json&by=position&lat=${fetchedCity.coord.lat}&lng=${fetchedCity.coord.lon}`
     )
 
     const timeZoneData = await timeZoneResponse.json()
