@@ -1,5 +1,5 @@
 const body = document.body
-// const cat = document.getElementById('cat-weather')
+const notfound = document.getElementById('not-found-msg')
 const form = document.getElementById('form');
 const cityInput = document.querySelector('.search-input');
 const cardContainer = document.querySelector('.card-container');
@@ -15,19 +15,36 @@ const convertCelsius = kelvin => {
     return celsius;
 };
 
+const dayNames = (day) => {
+    const days = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
+    return days[day];
+}
+
+const monthNames = (month) => {
+    const months = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
+    return months[month];
+}
+
+const getDayNames = () => {
+    const currentDay = new Date()
+
+    const searchDateYear = currentDay.getFullYear()
+    const searchDateMonth = currentDay.getMonth()
+    const searchDateDay = currentDay.getDay()
+    const searchMonthDayNumber = currentDay.getDate()
+
+    const searchDateDayName = dayNames(searchDateDay)
+    const searchDateMonthName = monthNames(searchDateMonth)
+    
+    return  `${searchDateDayName}, ${searchMonthDayNumber} of ${searchDateMonthName} of ${searchDateYear}`
+
+}
+
 const renderCity = city => {
     const cityDescripcion = city.weather[0].description
     const descriptionFirstLetter = cityDescripcion.charAt(0).toUpperCase()
     const remainingLetters = cityDescripcion.slice(1)
     const capitalizedDescription = descriptionFirstLetter + remainingLetters
-
-    // Obteniendo día especifico de la solicitud para renderizar en cada ciudad a modo de historial
-
-    const searchDateYear = new Date().getFullYear()
-    const searchDateMonth = new Date().getMonth()
-    const searchDateDay = new Date().getDay()
-    const searchDate = searchDateDay + "/" + searchDateMonth + "/" + searchDateYear
-    console.log(searchDate);
 
     return `
         <div class="card">
@@ -73,7 +90,7 @@ const renderCity = city => {
                 </div>
             </div>
             <div class="search-date">
-                <p>Viernes, 4 de Agosto de 2023</p>
+                <p>${city.searchDate}</p>
             </div>
         </div>
     `
@@ -86,54 +103,87 @@ const renderCitiesList = citiesList => {
 const timeDBkey = 'AJXKFG9MMZRF'
 
 const renderBasedOnCity = city => {
-    console.log(city);
+
+    const weatherConditions = {
+        Clear: {
+            backgroundColor: "#3A120A",
+            imageUrl: "./img/dayclear.png",
+            backgroundColorNight: "#07081D",
+            imageUrlNight: "./img/nightclear.png",
+        },
+        Clouds: {
+            backgroundColor: "#3C4D69",
+            imageUrl: "./img/daycloudy.png",
+            backgroundColorNight: "#18202E",
+            imageUrlNight: "./img/nightcloudy.png",
+        },
+        Smoke: {
+            backgroundColor: "#3C4D69",
+            imageUrl: "./img/daycloudy.png",
+        },
+        Rain: {
+            backgroundColor: "#0F141E",
+            imageUrl: "./img/rainy.png",
+        },
+        Snow: {
+            backgroundColor: "#053960",
+            imageUrl: "./img/snowy.png",
+        },
+        Haze: {
+            backgroundColor: "#18202E",
+            imageUrl: "./img/nightcloudy.png",
+        },
+    };
+
     const rangeNightStart = 19
     const rangeNightFinish = 8
 
-    const nightClear = "#07081D"
-    const nightCloudy = "#18202E"
-    const dayClear = "#3A120A"
-    const dayCloudy = "#3C4D69"
-    const snowy = "#053960"
-    const rainy = "#0F141E"
-    const stormy = "#060D17"
-
-    const nightClearPNG = "./img/nightclear.png"
-    const nightCloudyPNG = "./img/nightcloudy.png"
-    const dayClearPNG = "./img/dayclear.png"
-    const dayCloudyPNG = "./img/daycloudy.png"
-    const snowyPNG = "./img/snowy.png"
-    const rainyPNG = "./img/rainy.png"
-    const stormyPNG = "./img/stormy.png"
-
-    // en esta condición, revisar el clima para seleccionar correctamente el fondo y la imagen
-
-    // city.main TEMP
-    // city.weather.main lluvia, nieve, nubes, sol
-
-    if (parseInt(city.localTime) >= rangeNightStart || parseInt(city.localTime) <= rangeNightFinish){
-        body.style.backgroundColor = nightClear
-        document.getElementById("cat-image").src = nightClearPNG
-    }else{
-        body.style.backgroundColor = dayClear
-        document.getElementById("cat-image").src = dayClearPNG
+    if(!city){
+        body.style.backgroundColor = weatherConditions.Clear.backgroundColor
+        document.getElementById("cat-image").src = weatherConditions.Clear.imageUrl
+        return
     }
+
+    const weatherMain = city.weather[0].main;
+    
+    if (weatherConditions.hasOwnProperty(weatherMain)) {
+
+        
+        const condition = weatherConditions[weatherMain];
+        
+        if(weatherMain == "Clear" || weatherMain == "Clouds"){
+            if (parseInt(city.localTime) >= rangeNightStart || parseInt(city.localTime) <= rangeNightFinish){
+                body.style.backgroundColor = condition.backgroundColorNight
+                document.getElementById("cat-image").src = condition.imageUrlNight
+            }else{
+                body.style.backgroundColor = condition.backgroundColor
+                document.getElementById("cat-image").src = condition.imageUrl
+            }
+        }
+
+        return
+
+    } else {
+        console.log('Climatic condition not recognized:', weatherMain);
+    }
+    
 }
 
 const searchCity = async e => {
     e.preventDefault();
-    const searchedCity = cityInput.value.trim();
-    if (searchedCity.length === 0 || !/^[A-Za-z\s]*$/.test(searchedCity)) {
-        alert('Por favor ingresa una ciudad');
-        return;
-    }
 
+    if (!cityInput.value) return;
+
+    const searchedCity = cityInput.value.trim();
     const fetchedCity = await requestCity(searchedCity);
 
     if(!fetchedCity.id) {
-        alert('La ciudad ingresada no existe')
+        notfound.innerText = 'The entered city does not exist.'
         form.reset()
-        return}
+        return
+    }else{
+        notfound.innerText = ''
+    }
 
     const timeZoneResponse = await fetch(
         `http://api.timezonedb.com/v2.1/get-time-zone?key=${timeDBkey}&format=json&by=position&lat=${fetchedCity.coord.lat}&lng=${fetchedCity.coord.lon}`
@@ -144,6 +194,7 @@ const searchCity = async e => {
     const localTime = new Date(formatted).toLocaleTimeString()
 
     fetchedCity.localTime = localTime
+    fetchedCity.searchDate = getDayNames()
     
     if(cities.some(city => city.id === fetchedCity.id)){
         const foundIndex = cities.findIndex (el => el.id == fetchedCity.id)
@@ -153,7 +204,6 @@ const searchCity = async e => {
         renderCitiesList(cities)
         form.reset()
         renderBasedOnCity(fetchedCity)
-        console.log(fetchedCity);
         return
     }
 
@@ -172,6 +222,7 @@ const removeCity = e => {
     cities = cities.filter(city => city.id !== filterId);
     renderCitiesList(cities);
     saveLocalStorage(cities);
+    renderBasedOnCity(cities[0])
 };
 
 const init = () => {
