@@ -71,7 +71,7 @@ const renderCity = city => {
                             ${capitalizedDescription}
                         </div>
                         <div class="real-feel">
-                            ${convertCelsius(city.main.feels_like)}º
+                        ${convertCelsius(city.main.feels_like)}º FL
                         </div>
                     </div>
                 </div>

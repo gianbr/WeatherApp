@@ -18,11 +18,11 @@ main{
 
 nav{
     padding-top: 48px;
+    padding-bottom: 88px;
 }
 
 .app{
     display: flex;
-    align-items: center;
     justify-content: space-between;
 }
 
@@ -123,7 +123,8 @@ nav{
 .status{
     font-size: 24px;
     display: flex;
-    justify-content: space-around;
+    justify-content: space-between;
+    gap: 12px;
 }
 
 .weather-info{
