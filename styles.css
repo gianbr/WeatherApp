@@ -5,10 +5,10 @@
 }
 
 body{
-    background-color: #07081D;
     color: #FFFFFF;
     min-height: 100vh;
     height: 100%;
+    overflow-x: hidden;
 }
 
 main{

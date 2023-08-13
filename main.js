@@ -1,5 +1,6 @@
 const body = document.body
 const notfound = document.getElementById('not-found-msg')
+const catImage = document.getElementById('cat-image')
 const form = document.getElementById('form');
 const cityInput = document.querySelector('.search-input');
 const cardContainer = document.querySelector('.card-container');
@@ -140,7 +141,7 @@ const renderBasedOnCity = city => {
 
     if(!city){
         body.style.backgroundColor = weatherConditions.Clear.backgroundColor
-        document.getElementById("cat-image").src = weatherConditions.Clear.imageUrl
+        catImage.src = weatherConditions.Clear.imageUrl
         return
     }
 
@@ -154,10 +155,24 @@ const renderBasedOnCity = city => {
         if(weatherMain == "Clear" || weatherMain == "Clouds"){
             if (parseInt(city.localTime) >= rangeNightStart || parseInt(city.localTime) <= rangeNightFinish){
                 body.style.backgroundColor = condition.backgroundColorNight
-                document.getElementById("cat-image").src = condition.imageUrlNight
+
+                catImage.classList.add('animate__animated', 'animate__fadeInRight');
+                catImage.src = condition.imageUrlNight
+
+                catImage.addEventListener('animationend', function animEndListener() {
+                    catImage.classList.remove('animate__animated', 'animate__fadeInRight');
+                    catImage.removeEventListener('animationend', animEndListener);
+                });
+
             }else{
                 body.style.backgroundColor = condition.backgroundColor
-                document.getElementById("cat-image").src = condition.imageUrl
+                catImage.classList.add('animate__animated', 'animate__fadeInRight');
+        catImage.src = condition.imageUrl;
+
+        catImage.addEventListener('animationend', function animEndListener() {
+            catImage.classList.remove('animate__animated', 'animate__fadeInRight');
+            catImage.removeEventListener('animationend', animEndListener);
+        });
             }
         }
 
@@ -178,7 +193,13 @@ const searchCity = async e => {
     const fetchedCity = await requestCity(searchedCity);
 
     if(!fetchedCity.id) {
+        notfound.classList.add('animate__animated', 'animate__bounce');
         notfound.innerText = 'The entered city does not exist.'
+
+        notfound.addEventListener('animationend', function animEndListener() {
+            notfound.classList.remove('animate__animated', 'animate__bounce');
+            notfound.removeEventListener('animationend', animEndListener);
+        });
         form.reset()
         return
     }else{
@@ -202,6 +223,19 @@ const searchCity = async e => {
         cities.unshift(fetchedCity)
         saveLocalStorage(cities)
         renderCitiesList(cities)
+
+        if(cities.length > 0){
+            const firstCityCard = document.querySelector('.card');
+    
+            firstCityCard.classList.add('animate__animated', 'animate__slideInLeft');
+    
+            // Escuchar el evento 'animationend' para eliminar la clase de animación después de la animación
+            firstCityCard.addEventListener('animationend', function animEndListener() {
+                firstCityCard.classList.remove('animate__animated', 'animate__slideInLeft');
+                firstCityCard.removeEventListener('animationend', animEndListener);
+            });
+        }
+
         form.reset()
         renderBasedOnCity(fetchedCity)
         return
@@ -210,6 +244,19 @@ const searchCity = async e => {
     cities = [fetchedCity, ...cities]
     renderCitiesList(cities)
     saveLocalStorage(cities)
+
+    if(cities.length > 0){
+        const firstCityCard = document.querySelector('.card');
+
+        firstCityCard.classList.add('animate__animated', 'animate__slideInLeft');
+
+        // Escuchar el evento 'animationend' para eliminar la clase de animación después de la animación
+        firstCityCard.addEventListener('animationend', function animEndListener() {
+            firstCityCard.classList.remove('animate__animated', 'animate__slideInLeft');
+            firstCityCard.removeEventListener('animationend', animEndListener);
+        });
+    }
+
     form.reset()
     
     renderBasedOnCity(fetchedCity)
@@ -219,10 +266,29 @@ const searchCity = async e => {
 const removeCity = e => {
     if (!e.target.classList.contains('close')) return;
     const filterId = Number(e.target.dataset.id);
-    cities = cities.filter(city => city.id !== filterId);
-    renderCitiesList(cities);
-    saveLocalStorage(cities);
-    renderBasedOnCity(cities[0])
+
+    const cityToRemove = cities.find(city => city.id === filterId);
+
+    if (!cityToRemove) return;
+
+    const cityCardId = document.querySelector(`[data-id="${filterId}"]`);
+    const cityCard = cityCardId.parentNode.parentNode.parentNode.parentNode
+    console.log(cityCard);
+
+    
+    // Agregar clase de animación de deslizamiento hacia la izquierda a toda la "card"
+    cityCard.classList.add('animate__animated', 'animate__slideOutLeft');
+
+    // Escuchar el evento 'animationend' para eliminar la "card" después de la animación
+    cityCard.addEventListener('animationend', function animEndListener() {
+        // Eliminar el elemento de la lista de ciudades y renderizar nuevamente la lista
+        cities = cities.filter(city => city.id !== filterId);
+        renderCitiesList(cities);
+        saveLocalStorage(cities);
+        renderBasedOnCity(cities[0]);
+
+        cityCard.removeEventListener('animationend', animEndListener);
+    });
 };
 
 const init = () => {
